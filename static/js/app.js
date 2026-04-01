@@ -17,6 +17,12 @@ async function initializeData() {
             useHardcodedData();
         }
 
+        // Update sidebar count if element exists
+        const sidebarCount = document.getElementById('sidebar-active-count');
+        if (sidebarCount && data.metrics) {
+            sidebarCount.textContent = data.metrics.active;
+        }
+
         render();
     } catch (error) {
         console.error("Error fetching data from API:", error);
@@ -124,7 +130,7 @@ function calculateCriticality(deps = []) {
 // --- INTERACTIVE ACTIONS ---
 window.selectCase = (id) => {
     selectedKnowledgeId = id;
-    if(currentTab !== 'knowledge') window.setTab('knowledge');
+    if(currentTab !== 'knowledge') window.setTabAndCloseMenu('knowledge');
     else render();
 };
 
@@ -200,7 +206,7 @@ function renderDashboard(container) {
             <p class="text-sm text-slate-500 mt-1">Overview of employee transitions, knowledge risks, and license health</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div class="card p-5">
                 <div class="flex justify-between items-start mb-2">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Transitions</p>
@@ -236,12 +242,12 @@ function renderDashboard(container) {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 mb-6">
-            <div class="lg:col-span-2 card p-6">
+            <div class="lg:col-span-2 card p-4 md:p-6 overflow-x-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-sm text-slate-800">Active Transitions</h3>
-                    <button onclick="setTab('transitions')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
+                    <button onclick="setTabAndCloseMenu('transitions')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-4 min-w-[500px]">
                     ${data.transitions.map(t => `
                         <div class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-slate-200 transition-colors bg-white">
                             <div class="flex items-center gap-4">
@@ -253,9 +259,9 @@ function renderDashboard(container) {
                                     <p class="text-[11px] text-slate-500">${t.role} - ${t.status}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-6 w-1/3 min-w-[200px]">
+                            <div class="flex items-center gap-4 md:gap-6 w-1/3 min-w-[150px] md:min-w-[200px]">
                                 <span class="badge ${getBadgeClass(t.risk)} w-16 text-center">${t.risk}</span>
-                                <div class="flex-1">
+                                <div class="flex-1 hidden sm:block">
                                     <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                                         <div class="h-full ${getProgressColor(t.risk)} rounded-full" style="width: ${t.progress}%"></div>
                                     </div>
@@ -270,7 +276,7 @@ function renderDashboard(container) {
             <div class="lg:col-span-1 card p-6 flex flex-col">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-sm text-slate-800">License Costs</h3>
-                    <button onclick="setTab('licenses')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
+                    <button onclick="setTabAndCloseMenu('licenses')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
                 </div>
                 <div class="flex-1 flex flex-col justify-center items-center">
                     <i data-lucide="pie-chart" class="w-32 h-32 text-indigo-500 mb-6 drop-shadow-sm"></i>
@@ -285,15 +291,15 @@ function renderDashboard(container) {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div class="card p-6">
+            <div class="card p-6 overflow-x-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-sm text-slate-800">Knowledge Risk Scores</h3>
                     <button class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-4 min-w-[300px]">
                     ${[...data.employees, ...data.transitions].sort((a,b) => (b.score || 0) - (a.score || 0)).slice(0,6).map(emp => `
                         <div class="flex items-center gap-4">
-                            <div class="w-32">
+                            <div class="w-24 md:w-32">
                                 <p class="text-xs font-bold text-slate-900 truncate">${emp.name}</p>
                                 <p class="text-[10px] text-slate-500 truncate">${emp.dept || emp.role}</p>
                             </div>
@@ -302,7 +308,7 @@ function renderDashboard(container) {
                                     <div class="h-full ${emp.score > 80 ? 'bg-rose-500' : (emp.score > 60 ? 'bg-amber-500' : 'bg-emerald-500')} rounded-full" style="width: ${emp.score}%"></div>
                                 </div>
                             </div>
-                            <div class="w-16 text-right">
+                            <div class="w-16 text-right flex flex-col md:block">
                                 <span class="text-xs font-bold text-slate-700">${emp.score}</span>
                                 <span class="text-[10px] text-slate-500 ml-1">${emp.score > 80 ? 'Critical' : (emp.score > 60 ? 'High' : 'Medium')}</span>
                             </div>
@@ -314,19 +320,19 @@ function renderDashboard(container) {
             <div class="card p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-sm text-slate-800">Urgent Tasks</h3>
-                    <button onclick="setTab('tasks')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
+                    <button onclick="setTabAndCloseMenu('tasks')" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">View all &rarr;</button>
                 </div>
                 <div class="space-y-4">
                     ${data.tasks.filter(t => !t.completed).slice(0,5).map(t => `
-                        <div class="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50">
-                            <div class="flex items-start gap-3">
-                                <div class="mt-0.5 w-4 h-4 rounded-full border border-slate-300 bg-white"></div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-900">${t.title}</p>
-                                    <p class="text-[10px] text-slate-500">${t.desc}</p>
+                        <div class="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50 flex-wrap gap-2">
+                            <div class="flex items-start gap-3 w-full sm:w-auto">
+                                <div class="mt-0.5 w-4 h-4 rounded-full border border-slate-300 bg-white shrink-0"></div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-slate-900 truncate">${t.title}</p>
+                                    <p class="text-[10px] text-slate-500 truncate">${t.desc}</p>
                                 </div>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right sm:ml-auto pl-7 sm:pl-0">
                                 <span class="text-[10px] font-bold ${t.priority === 'CRITICAL' ? 'text-rose-600' : (t.priority === 'HIGH' ? 'text-amber-600' : 'text-slate-500')}">${t.completed ? 'Completed' : (t.priority === 'CRITICAL' ? 'In Progress' : 'Pending')}</span>
                             </div>
                         </div>
@@ -344,57 +350,57 @@ function renderEmployees(container) {
 
     container.innerHTML = `
         <div class="animate-in fade-in duration-500 flex flex-col h-full">
-            <div class="flex justify-between items-center mb-8 shrink-0">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8 shrink-0">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Productivity Telemetry</h1>
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Workforce Intelligence & Optimization</p>
                 </div>
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
                     <i data-lucide="plus" class="w-4 h-4"></i> Add Employee
                 </button>
             </div>
 
-            <div class="grid grid-cols-4 gap-4 mb-8 shrink-0">
-                <div class="card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3">
-                        <i data-lucide="trending-up" class="w-5 h-5"></i>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 shrink-0">
+                <div class="card p-4 md:p-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-2 md:mb-3">
+                        <i data-lucide="trending-up" class="w-4 h-4 md:w-5 md:h-5"></i>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Org Velocity</p>
-                    <p class="text-3xl font-black text-slate-900">+12%</p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Org Velocity</p>
+                    <p class="text-xl md:text-3xl font-black text-slate-900">+12%</p>
                 </div>
-                <div class="card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-3">
-                        <i data-lucide="zap" class="w-5 h-5"></i>
+                <div class="card p-4 md:p-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-2 md:mb-3">
+                        <i data-lucide="zap" class="w-4 h-4 md:w-5 md:h-5"></i>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Deep Work Ratio</p>
-                    <p class="text-3xl font-black text-slate-900">42%</p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Deep Work</p>
+                    <p class="text-xl md:text-3xl font-black text-slate-900">42%</p>
                 </div>
-                <div class="card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
-                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                <div class="card p-4 md:p-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-2 md:mb-3">
+                        <i data-lucide="calendar" class="w-4 h-4 md:w-5 md:h-5"></i>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Meeting Load</p>
-                    <p class="text-3xl font-black text-slate-900">18h/wk</p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Meeting Load</p>
+                    <p class="text-xl md:text-3xl font-black text-slate-900">18h</p>
                 </div>
-                <div class="card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center mb-3">
-                        <i data-lucide="activity" class="w-5 h-5"></i>
+                <div class="card p-4 md:p-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center mb-2 md:mb-3">
+                        <i data-lucide="activity" class="w-4 h-4 md:w-5 md:h-5"></i>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Burnout Signal</p>
-                    <p class="text-3xl font-black text-slate-900">2 <span class="text-base font-bold">High</span></p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Burnout Signal</p>
+                    <p class="text-xl md:text-3xl font-black text-slate-900">2 <span class="text-sm md:text-base font-bold">High</span></p>
                 </div>
             </div>
 
-            <div class="flex gap-8 items-start flex-1 min-h-0">
+            <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start flex-1 min-h-0">
 
-                <div class="w-[320px] flex flex-col h-full shrink-0">
+                <div class="w-full lg:w-[320px] flex flex-col shrink-0 lg:h-full mb-6 lg:mb-0">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Active Roster</h4>
-                    <div class="space-y-3 overflow-y-auto pr-2 pb-10 scrollbar-hide">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 lg:overflow-y-auto lg:pr-2 lg:pb-10 scrollbar-hide">
                         ${allStaff.map(emp => `
-                            <button onclick="window.selectTelemetry('${emp.id}')" class="w-full text-left p-5 rounded-2xl border transition-all ${selectedTelemetryId === emp.id ? 'bg-white border-indigo-500 shadow-md ring-1 ring-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-300'}">
+                            <button onclick="window.selectTelemetry('${emp.id}')" class="w-full text-left p-4 md:p-5 rounded-2xl border transition-all ${selectedTelemetryId === emp.id ? 'bg-white border-indigo-500 shadow-md ring-1 ring-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-300'}">
                                 <div class="flex justify-between items-start mb-1">
                                     <p class="font-bold text-slate-900">${emp.name}</p>
-                                    <span class="text-[9px] font-black uppercase tracking-widest ${emp.state === 'OPTIMAL' ? 'text-emerald-500' : 'text-rose-500'}">${emp.state}</span>
+                                    <span class="text-[8px] md:text-[9px] font-black uppercase tracking-widest ${emp.state === 'OPTIMAL' ? 'text-emerald-500' : 'text-rose-500'}">${emp.state}</span>
                                 </div>
                                 <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-4">${emp.role}</p>
 
@@ -418,24 +424,21 @@ function renderEmployees(container) {
                     </div>
                 </div>
 
-                <div class="flex-1 card p-8 h-full overflow-y-auto">
-                    <div class="flex justify-between items-start mb-8">
+                <div class="flex-1 card p-4 md:p-8 w-full lg:h-full lg:overflow-y-auto">
+                    <div class="flex justify-between items-start mb-6 md:mb-8">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-900">${selectedEmployee.name} <span class="text-slate-300 font-normal">/ Signal Analysis</span></h2>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-900">${selectedEmployee.name} <span class="text-slate-300 font-normal">/ Signal Analysis</span></h2>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Data Source Breakdown</p>
                         </div>
-                        <button class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors">
-                            <i data-lucide="x" class="w-4 h-4"></i>
-                        </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-5">
                             <div class="flex items-center gap-2 mb-4 text-slate-500">
                                 <i data-lucide="git-branch" class="w-4 h-4"></i>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">VCS (GitHub/GitLab)</span>
                             </div>
-                            <p class="text-3xl font-black text-slate-900 mb-1">${selectedEmployee.github.commits}</p>
+                            <p class="text-2xl md:text-3xl font-black text-slate-900 mb-1">${selectedEmployee.github.commits}</p>
                             <p class="text-xs font-bold text-slate-400 mb-3">Commits</p>
                             <div class="flex gap-4 text-xs font-medium text-slate-500">
                                 <span><strong class="text-slate-700">${selectedEmployee.github.prs}</strong> PRs</span>
@@ -443,12 +446,12 @@ function renderEmployees(container) {
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-5">
                             <div class="flex items-center gap-2 mb-4 text-slate-500">
                                 <i data-lucide="calendar" class="w-4 h-4"></i>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Calendar API</span>
                             </div>
-                            <p class="text-3xl font-black text-slate-900 mb-1">${selectedEmployee.calendar.hours}h</p>
+                            <p class="text-2xl md:text-3xl font-black text-slate-900 mb-1">${selectedEmployee.calendar.hours}h</p>
                             <p class="text-xs font-bold text-slate-400 mb-3">In Meetings</p>
                             <div class="flex gap-4 text-xs font-medium text-slate-500">
                                 <span><strong class="text-slate-700">${selectedEmployee.calendar.conflicts}</strong> Conflicts</span>
@@ -456,12 +459,12 @@ function renderEmployees(container) {
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-5">
                             <div class="flex items-center gap-2 mb-4 text-slate-500">
                                 <i data-lucide="message-square" class="w-4 h-4"></i>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Slack Telemetry</span>
                             </div>
-                            <p class="text-3xl font-black text-slate-900 mb-1">${selectedEmployee.slack.afterHours}h</p>
+                            <p class="text-2xl md:text-3xl font-black text-slate-900 mb-1">${selectedEmployee.slack.afterHours}h</p>
                             <p class="text-xs font-bold text-slate-400 mb-3">After Hours</p>
                             <div class="flex gap-4 text-xs font-medium text-slate-500">
                                 <span><strong class="text-slate-700">${selectedEmployee.slack.reply}</strong> Avg Reply</span>
@@ -469,12 +472,12 @@ function renderEmployees(container) {
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-5">
                             <div class="flex items-center gap-2 mb-4 text-slate-500">
                                 <i data-lucide="check-circle" class="w-4 h-4"></i>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Jira/Linear</span>
                             </div>
-                            <p class="text-3xl font-black text-slate-900 mb-1">${selectedEmployee.jira.tickets}</p>
+                            <p class="text-2xl md:text-3xl font-black text-slate-900 mb-1">${selectedEmployee.jira.tickets}</p>
                             <p class="text-xs font-bold text-slate-400 mb-3">Tickets Done</p>
                             <div class="flex gap-4 text-xs font-medium text-slate-500">
                                 <span><strong class="text-slate-700">${selectedEmployee.jira.rollovers}</strong> Rollovers</span>
@@ -483,7 +486,7 @@ function renderEmployees(container) {
                         </div>
                     </div>
 
-                    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 md:p-6">
                         <div class="flex items-center gap-2 mb-3 text-indigo-600">
                             <i data-lucide="bot" class="w-4 h-4"></i>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Automated Insight</span>
@@ -503,40 +506,40 @@ function renderEmployees(container) {
 function renderTransitions(container) {
     container.innerHTML = `
         <div class="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Transitions</h1>
                     <p class="text-sm text-slate-500 mt-1">${data.transitions.length} active workflows</p>
                 </div>
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
                     <i data-lucide="plus" class="w-4 h-4"></i> New Transition
                 </button>
             </div>
 
-            <div class="flex gap-4 mb-6">
-                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none"><option>All Types</option></select>
-                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none"><option>All Statuses</option></select>
+            <div class="flex gap-2 sm:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none shrink-0"><option>All Types</option></select>
+                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none shrink-0"><option>All Statuses</option></select>
             </div>
 
             <div class="space-y-4">
                 ${data.transitions.map((t, i) => `
-                    <div class="card p-5 hover:border-indigo-300 transition-colors cursor-pointer">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-${t.status === 'Offboarding' ? 'rose' : 'emerald'}-50 flex items-center justify-center text-${t.status === 'Offboarding' ? 'rose' : 'emerald'}-600">
+                    <div class="card p-4 md:p-5 hover:border-indigo-300 transition-colors cursor-pointer">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                            <div class="flex items-start md:items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-${t.status === 'Offboarding' ? 'rose' : 'emerald'}-50 flex items-center justify-center text-${t.status === 'Offboarding' ? 'rose' : 'emerald'}-600 shrink-0">
                                     <i data-lucide="arrow-${t.status === 'Offboarding' ? 'up-right' : 'down-right'}" class="w-5 h-5"></i>
                                 </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <p class="text-sm font-bold text-slate-900">${t.name}</p>
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        <p class="text-sm font-bold text-slate-900 truncate">${t.name}</p>
                                         <span class="badge ${t.progress === 100 ? 'badge-medium' : 'badge-high'}">${t.progress === 100 ? 'COMPLETED' : 'IN PROGRESS'}</span>
                                         <span class="badge ${getBadgeClass(t.risk)}">${t.risk}</span>
                                     </div>
-                                    <p class="text-xs text-slate-500">${t.status} · ${t.role} · Assigned to Nina Patel</p>
-                                    <p class="text-xs text-slate-500 mt-2">${t.status === 'Offboarding' ? (t.progress === 100 ? 'Completed - security credentials revoked' : 'Design system handover critical') : 'New marketing manager starting'}</p>
+                                    <p class="text-xs text-slate-500 truncate">${t.status} · ${t.role} · Assigned to Nina Patel</p>
+                                    <p class="text-xs text-slate-500 mt-2 hidden sm:block">${t.status === 'Offboarding' ? (t.progress === 100 ? 'Completed - security credentials revoked' : 'Design system handover critical') : 'New marketing manager starting'}</p>
                                 </div>
                             </div>
-                            <div class="w-48">
+                            <div class="w-full md:w-48 ml-[56px] md:ml-0">
                                 <div class="flex justify-between text-[10px] text-slate-500 font-bold mb-1">
                                     <span>Due Mar ${i+1}</span>
                                     <span>${t.progress}%</span>
@@ -562,37 +565,37 @@ function renderTasks(container) {
                 <p class="text-sm text-slate-500 mt-1">${data.tasks.filter(t=>t.completed).length}/${data.tasks.length} completed · ${data.tasks.filter(t=>!t.completed && t.priority==='CRITICAL').length} critical pending</p>
             </div>
 
-            <div class="grid grid-cols-4 gap-4 mb-6">
-                <div class="card p-5 text-center">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="card p-4 md:p-5 text-center">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
-                    <p class="text-2xl font-black text-slate-900">${data.tasks.length}</p>
+                    <p class="text-xl md:text-2xl font-black text-slate-900">${data.tasks.length}</p>
                 </div>
-                <div class="card p-5 text-center">
+                <div class="card p-4 md:p-5 text-center">
                     <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Completed</p>
-                    <p class="text-2xl font-black text-emerald-600">${data.tasks.filter(t=>t.completed).length}</p>
+                    <p class="text-xl md:text-2xl font-black text-emerald-600">${data.tasks.filter(t=>t.completed).length}</p>
                 </div>
-                <div class="card p-5 text-center">
+                <div class="card p-4 md:p-5 text-center">
                     <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1">Pending</p>
-                    <p class="text-2xl font-black text-amber-600">${data.tasks.filter(t=>!t.completed).length}</p>
+                    <p class="text-xl md:text-2xl font-black text-amber-600">${data.tasks.filter(t=>!t.completed).length}</p>
                 </div>
-                <div class="card p-5 text-center">
+                <div class="card p-4 md:p-5 text-center">
                     <p class="text-[10px] font-bold text-rose-600 uppercase tracking-widest mb-1">Critical</p>
-                    <p class="text-2xl font-black text-rose-600">${data.tasks.filter(t=>!t.completed && t.priority==='CRITICAL').length}</p>
+                    <p class="text-xl md:text-2xl font-black text-rose-600">${data.tasks.filter(t=>!t.completed && t.priority==='CRITICAL').length}</p>
                 </div>
             </div>
 
-            <div class="flex gap-4 mb-6">
-                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none"><option>All Categories</option></select>
-                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none"><option>All Statuses</option></select>
-                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none"><option>All Priorities</option></select>
+            <div class="flex gap-2 sm:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none shrink-0"><option>All Categories</option></select>
+                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none shrink-0"><option>All Statuses</option></select>
+                <select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none shrink-0"><option>All Priorities</option></select>
             </div>
 
             <div class="card overflow-hidden">
                 <div class="divide-y divide-slate-100">
                     ${data.tasks.map(t => `
-                        <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                            <div class="flex items-center gap-4">
-                                <button class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${t.completed ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'border-slate-300'}">
+                        <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 hover:bg-slate-50 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <button class="mt-0.5 sm:mt-0 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${t.completed ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'border-slate-300'}">
                                     ${t.completed ? '<i data-lucide="check" class="w-3 h-3"></i>' : '<div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>'}
                                 </button>
                                 <div>
@@ -600,10 +603,10 @@ function renderTasks(container) {
                                     <p class="text-[11px] text-slate-500 mt-0.5">${t.desc}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-[10px] font-medium text-slate-500 w-16 text-right">${t.dept}</span>
+                            <div class="flex items-center gap-4 sm:gap-6 ml-9 sm:ml-0">
+                                <span class="text-[10px] font-medium text-slate-500 w-16 text-right hidden sm:inline-block">${t.dept}</span>
                                 <span class="badge ${t.priority === 'CRITICAL' ? 'badge-critical' : (t.priority === 'HIGH' ? 'badge-high' : 'badge-purple')} w-20 text-center">${t.priority}</span>
-                                <span class="text-xs text-slate-400 w-12 text-right flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${t.time}</span>
+                                <span class="text-xs text-slate-400 w-12 text-right flex items-center justify-end gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${t.time}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -622,17 +625,17 @@ function renderAudit(container) {
                 <p class="text-sm text-slate-500 mt-1">Track all system activities and changes</p>
             </div>
 
-            <div class="flex gap-3 mb-6">
-                <div class="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2 w-64 shadow-sm">
-                    <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <div class="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2 w-full sm:w-64 shadow-sm">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2 shrink-0"></i>
                     <input type="text" placeholder="Search logs..." class="bg-transparent border-none outline-none text-xs w-full placeholder:text-slate-400">
                 </div>
-                <button class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">All</button>
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50">Transition</button>
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50">License</button>
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50">Access</button>
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50">Knowledge</button>
-                <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50">System</button>
+                <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                    <button class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm shrink-0">All</button>
+                    <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 shrink-0">Transition</button>
+                    <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 shrink-0">License</button>
+                    <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 shrink-0">Access</button>
+                </div>
             </div>
 
             <div class="card overflow-hidden">
@@ -645,18 +648,18 @@ function renderAudit(container) {
                         if(log.tag === 'knowledge') { iconBg = 'bg-emerald-50'; iconColor = 'text-emerald-500'; iconType = 'brain'; badgeClass = 'bg-emerald-50 text-emerald-600'; }
 
                         return `
-                        <div class="p-4 flex items-start gap-4 hover:bg-slate-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0">
-                                <i data-lucide="${iconType}" class="w-5 h-5 ${iconColor}"></i>
+                        <div class="p-4 flex items-start gap-3 md:gap-4 hover:bg-slate-50 transition-colors">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0">
+                                <i data-lucide="${iconType}" class="w-4 h-4 md:w-5 md:h-5 ${iconColor}"></i>
                             </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
                                     <p class="text-sm font-bold text-slate-900">${log.title}</p>
                                     <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${badgeClass}">${log.tag}</span>
                                 </div>
-                                <p class="text-sm text-slate-600 mb-2">${log.desc}</p>
-                                <div class="flex items-center gap-4 text-[11px] text-slate-400 font-medium">
-                                    <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${log.user}</span>
+                                <p class="text-xs md:text-sm text-slate-600 mb-2">${log.desc}</p>
+                                <div class="flex flex-wrap items-center gap-3 md:gap-4 text-[10px] md:text-[11px] text-slate-400 font-medium">
+                                    <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> <span class="truncate max-w-[100px]">${log.user}</span></span>
                                     <span class="flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> ${log.action}</span>
                                     <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${log.date}</span>
                                 </div>
@@ -680,7 +683,7 @@ function renderDocumentation(container) {
             </div>
 
             <div class="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2 w-full max-w-md shadow-sm mb-6">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2 shrink-0"></i>
                 <input type="text" placeholder="Search documentation..." class="bg-transparent border-none outline-none text-xs w-full placeholder:text-slate-400">
             </div>
 
@@ -688,12 +691,12 @@ function renderDocumentation(container) {
                 <div class="card overflow-hidden border border-indigo-200 ring-1 ring-indigo-50">
                     <div class="flex items-center justify-between p-4 bg-indigo-50/50 cursor-pointer">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded bg-indigo-100 flex items-center justify-center text-indigo-600"><i data-lucide="book-open" class="w-4 h-4"></i></div>
+                            <div class="w-8 h-8 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0"><i data-lucide="book-open" class="w-4 h-4"></i></div>
                             <h3 class="font-bold text-slate-900 text-sm">Platform Overview</h3>
                         </div>
                         <i data-lucide="chevron-up" class="w-4 h-4 text-slate-400"></i>
                     </div>
-                    <div class="p-6 border-t border-slate-100 bg-white">
+                    <div class="p-4 md:p-6 border-t border-slate-100 bg-white">
                         <p class="text-sm text-slate-600 leading-relaxed mb-6">
                             TransitionIQ is an intelligent platform designed to streamline employee transitions, knowledge management, and resource optimization. It helps organizations minimize disruption during onboarding and offboarding while capturing critical institutional knowledge.
                         </p>
@@ -730,7 +733,7 @@ function renderDocumentation(container) {
                     return `
                     <div class="card p-4 hover:border-slate-300 transition-colors cursor-pointer flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500"><i data-lucide="${icon}" class="w-4 h-4"></i></div>
+                            <div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0"><i data-lucide="${icon}" class="w-4 h-4"></i></div>
                             <h3 class="font-bold text-slate-900 text-sm">${title}</h3>
                         </div>
                         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
@@ -745,44 +748,44 @@ function renderDocumentation(container) {
 function renderLogistics(container) {
     container.innerHTML = `
         <div class="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Hardware Logistics</h1>
                     <p class="text-sm text-slate-500 mt-1">Track and retrieve physical assets from remote employees</p>
                 </div>
-                <button class="bg-slate-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="box" class="w-4 h-4"></i> Dispatch Return Kit
+                <button class="bg-slate-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+                    <i data-lucide="box" class="w-4 h-4"></i> Dispatch Kit
                 </button>
             </div>
 
-            <div class="card overflow-hidden">
-                <table class="w-full text-left border-collapse">
+            <div class="card overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="py-3 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Employee Name</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned Asset</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tracking Info</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Logistics Status</th>
-                            <th class="py-3 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Action</th>
+                            <th class="py-3 px-4 md:px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Employee</th>
+                            <th class="py-3 px-4 md:px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Asset</th>
+                            <th class="py-3 px-4 md:px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tracking</th>
+                            <th class="py-3 px-4 md:px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                            <th class="py-3 px-4 md:px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         ${data.transitions.filter(t=>t.status==='Offboarding').map(t => `
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-4 px-6">
-                                    <p class="font-bold text-sm text-slate-900">${t.name}</p>
-                                    <p class="text-xs text-slate-500">${t.location}</p>
+                                <td class="py-3 md:py-4 px-4 md:px-6">
+                                    <p class="font-bold text-sm text-slate-900 whitespace-nowrap">${t.name}</p>
+                                    <p class="text-[10px] md:text-xs text-slate-500">${t.location}</p>
                                 </td>
-                                <td class="py-4 px-6 text-sm text-slate-600 font-medium flex items-center gap-2">
-                                    <i data-lucide="laptop" class="w-4 h-4 text-slate-400"></i> ${t.hw}
+                                <td class="py-3 md:py-4 px-4 md:px-6 text-xs md:text-sm text-slate-600 font-medium flex items-center gap-2">
+                                    <i data-lucide="laptop" class="w-4 h-4 text-slate-400 shrink-0"></i> <span class="truncate max-w-[120px] md:max-w-none">${t.hw}</span>
                                 </td>
-                                <td class="py-4 px-6 font-mono text-xs text-indigo-600 font-medium">
-                                    ${t.tracking !== '-' ? `<a href="#" class="hover:underline flex items-center gap-1">${t.tracking} <i data-lucide="external-link" class="w-3 h-3"></i></a>` : '<span class="text-slate-300">Not generated</span>'}
+                                <td class="py-3 md:py-4 px-4 md:px-6 font-mono text-[10px] md:text-xs text-indigo-600 font-medium">
+                                    ${t.tracking !== '-' ? `<a href="#" class="hover:underline flex items-center gap-1">${t.tracking} <i data-lucide="external-link" class="w-3 h-3 hidden md:block"></i></a>` : '<span class="text-slate-300">N/A</span>'}
                                 </td>
-                                <td class="py-4 px-6">
+                                <td class="py-3 md:py-4 px-4 md:px-6">
                                     <span class="badge ${t.hwStatus === 'In Transit' ? 'badge-medium' : (t.hwStatus === 'Issued' ? 'badge-purple' : 'badge-high')}">${t.hwStatus}</span>
                                 </td>
-                                <td class="py-4 px-6 text-right">
+                                <td class="py-3 md:py-4 px-4 md:px-6 text-right">
                                     <button class="text-slate-400 hover:text-indigo-600 transition-colors p-1.5 hover:bg-indigo-50 rounded-md"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
                                 </td>
                             </tr>
@@ -805,21 +808,26 @@ function renderLicenses(container) {
 
             <div class="grid grid-cols-1 gap-4">
                 ${data.transitions.filter(t => t.status === 'Offboarding').map(t => `
-                    <div class="card p-6 flex justify-between items-center border-l-4 border-rose-500 hover:shadow-md transition-shadow">
-                        <div class="flex items-center gap-5">
-                            <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center text-rose-600"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
+                    <div class="card p-4 md:p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 border-l-4 border-rose-500 hover:shadow-md transition-shadow">
+                        <div class="flex items-start md:items-center gap-4 md:gap-5">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="alert-circle" class="w-5 h-5 md:w-6 md:h-6"></i></div>
                             <div>
-                                <h3 class="font-bold text-slate-900 text-lg">${t.name} <span class="text-xs font-medium text-slate-500 ml-2 py-0.5 px-2 bg-slate-100 rounded-full">Departing in 4 days</span></h3>
-                                <div class="flex gap-2 mt-2">
-                                    <span class="badge bg-slate-50 text-slate-600 border border-slate-200">Salesforce (Active)</span>
-                                    <span class="badge bg-slate-50 text-slate-600 border border-slate-200">Adobe CC (Active)</span>
+                                <h3 class="font-bold text-slate-900 text-base md:text-lg flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                                    ${t.name}
+                                    <span class="text-[10px] md:text-xs font-medium text-slate-500 py-0.5 px-2 bg-slate-100 rounded-full w-fit">Departing in 4 days</span>
+                                </h3>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="badge bg-slate-50 text-slate-600 border border-slate-200">Salesforce</span>
+                                    <span class="badge bg-slate-50 text-slate-600 border border-slate-200">Adobe CC</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-right border-l border-slate-100 pl-8">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Potential Waste</p>
-                            <p class="text-2xl font-black text-rose-600 mb-2">$${t.costWaste}/mo</p>
-                            <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">Revoke All via Okta</button>
+                        <div class="text-left md:text-right border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-8 flex flex-row md:flex-col justify-between items-center md:items-end">
+                            <div>
+                                <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Potential Waste</p>
+                                <p class="text-xl md:text-2xl font-black text-rose-600 mb-0 md:mb-2">$${t.costWaste}/mo</p>
+                            </div>
+                            <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold transition-colors shadow-sm">Revoke via Okta</button>
                         </div>
                     </div>
                 `).join('')}
@@ -845,56 +853,58 @@ function renderKnowledge(container) {
                     <h1 class="text-2xl font-bold text-slate-900">Knowledge Capture</h1>
                     <p class="text-sm text-slate-500 mt-1">AI-assisted institutional memory extraction</p>
                 </div>
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i> New Session
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> <span class="hidden sm:inline">New Session</span>
                 </button>
             </div>
 
-            <div class="flex gap-6 items-start">
+            <div class="flex flex-col lg:flex-row gap-6 items-start">
 
-                <div class="w-1/3 space-y-3">
+                <div class="w-full lg:w-1/3 space-y-3 shrink-0">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Active Sessions</h4>
-                    ${offboarding.map(item => `
-                        <button onclick="window.selectCase('${item.id}')" class="w-full text-left p-4 rounded-xl border transition-all ${selectedKnowledgeId === item.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-300'}">
-                            <div class="flex justify-between items-center mb-1">
-                                <p class="font-bold text-slate-900">${item.name}</p>
-                                <span class="badge ${getBadgeClass(item.risk)}">${item.risk}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mb-2">${item.role}</p>
-                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="h-full bg-indigo-500 rounded-full" style="width: ${item.knowledgeCaptured}%"></div>
-                            </div>
-                        </button>
-                    `).join('')}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                        ${offboarding.map(item => `
+                            <button onclick="window.selectCase('${item.id}')" class="w-full text-left p-4 rounded-xl border transition-all ${selectedKnowledgeId === item.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-300'}">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="font-bold text-slate-900">${item.name}</p>
+                                    <span class="badge ${getBadgeClass(item.risk)}">${item.risk}</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mb-2">${item.role}</p>
+                                <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 rounded-full" style="width: ${item.knowledgeCaptured}%"></div>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
                 </div>
 
-                <div class="flex-1 card p-0 overflow-hidden bg-white">
+                <div class="flex-1 card p-0 overflow-hidden bg-white w-full">
 
-                    <div class="bg-slate-900 p-8 relative flex flex-col items-center justify-center min-h-[350px] border-b border-slate-200">
-                        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+                    <div class="bg-slate-900 p-4 md:p-8 relative flex flex-col items-center justify-center min-h-[250px] md:min-h-[350px] border-b border-slate-200">
+                        <div class="absolute top-0 right-0 w-32 md:w-64 h-32 md:h-64 bg-indigo-500/10 rounded-full blur-[40px] md:blur-[80px] -mr-16 md:-mr-32 -mt-16 md:-mt-32"></div>
 
-                        <div class="w-full flex justify-between items-start mb-6 z-10 absolute top-6 left-6 right-6">
-                            <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="network" class="w-4 h-4"></i> Network Analysis</h4>
-                            <span class="text-[10px] font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-400/20 shadow-inner">Criticality: ${critScore}%</span>
+                        <div class="w-full flex justify-between items-start mb-6 z-10 absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-6">
+                            <h4 class="text-[9px] md:text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1 md:gap-2"><i data-lucide="network" class="w-3 h-3 md:w-4 md:h-4"></i> Network</h4>
+                            <span class="text-[9px] md:text-[10px] font-bold bg-indigo-500/20 text-indigo-300 px-2 md:px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-400/20 shadow-inner">Crit: ${critScore}%</span>
                         </div>
 
-                        <div class="z-10 w-full flex justify-center mt-8">
+                        <div class="z-10 w-full flex justify-center mt-8 md:mt-8 transform scale-75 md:scale-100 origin-center">
                             ${renderGraphSVG(selectedEmployee)}
                         </div>
                     </div>
 
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6 pb-6 border-b border-slate-100">
+                    <div class="p-4 md:p-8">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 pb-6 border-b border-slate-100">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900">Synthesis Engine</h3>
-                                <p class="text-xs text-slate-500 font-medium mt-1">Extraction Level: ${selectedEmployee.knowledgeCaptured}% Complete</p>
+                                <h3 class="text-lg md:text-xl font-bold text-slate-900">Synthesis Engine</h3>
+                                <p class="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Extraction: ${selectedEmployee.knowledgeCaptured}% Complete</p>
                             </div>
-                            <button onclick="window.generateBible('${selectedEmployee.id}')" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm hover:bg-black transition-all ${isGenerating ? 'opacity-50' : ''}">
-                                ${isGenerating ? '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing' : '<i data-lucide="sparkles" class="w-4 h-4"></i> Synthesize Handover'}
+                            <button onclick="window.generateBible('${selectedEmployee.id}')" class="w-full sm:w-auto justify-center bg-slate-900 text-white px-4 py-2.5 md:py-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm hover:bg-black transition-all ${isGenerating ? 'opacity-50' : ''}">
+                                ${isGenerating ? '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing' : '<i data-lucide="sparkles" class="w-4 h-4"></i> Synthesize'}
                             </button>
                         </div>
 
-                        <div class="space-y-8">
+                        <div class="space-y-6 md:space-y-8">
                             ${createInputBlock(1, 'Infrastructure Dependencies', 'Identify specific cloud resources or legacy systems managed.', selectedEmployee.responses.context, 'context', selectedEmployee.id)}
                             ${createInputBlock(2, 'Key Client Nuances', 'Identify unwritten communication styles and revenue triggers.', selectedEmployee.responses.stakeholders, 'stakeholders', selectedEmployee.id)}
                         </div>
@@ -909,11 +919,11 @@ function renderKnowledge(container) {
 // --- SUB-COMPONENTS FOR KNOWLEDGE TAB ---
 function createInputBlock(num, title, q, val, field, id) {
     return `
-    <div class="relative pl-12 group">
-        <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-black text-slate-400 text-xs group-focus-within:bg-indigo-600 group-focus-within:text-white transition-all shadow-sm">${num}</div>
+    <div class="relative pl-10 md:pl-12 group">
+        <div class="absolute left-0 top-0 w-7 h-7 md:w-8 md:h-8 rounded-lg bg-slate-100 flex items-center justify-center font-black text-slate-400 text-xs group-focus-within:bg-indigo-600 group-focus-within:text-white transition-all shadow-sm">${num}</div>
         <h4 class="font-bold text-slate-800 mb-0.5 text-sm">${title}</h4>
-        <p class="text-xs text-slate-500 mb-3">${q}</p>
-        <textarea onchange="updateResponse('${id}', '${field}', this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm min-h-[100px] focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none transition-all">${val}</textarea>
+        <p class="text-[10px] md:text-xs text-slate-500 mb-2 md:mb-3">${q}</p>
+        <textarea onchange="updateResponse('${id}', '${field}', this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 md:p-4 text-xs md:text-sm min-h-[80px] md:min-h-[100px] focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white outline-none transition-all">${val}</textarea>
     </div>`;
 }
 
