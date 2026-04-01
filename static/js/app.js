@@ -1,5 +1,32 @@
-// --- STATE & DATA ---
-const data = {
+let data = {};
+
+let currentTab = 'dashboard';
+let selectedKnowledgeId = '1';
+let selectedTelemetryId = 'e1';
+let isGenerating = false;
+
+// --- INITIALIZE DATA ---
+async function initializeData() {
+    try {
+        const response = await fetch('/api/data');
+        data = await response.json();
+
+        // If the database was empty, fallback to the hardcoded data for demonstration
+        if (!data || !data.transitions || data.transitions.length === 0) {
+            console.warn("Database empty or failed to connect. Falling back to hardcoded data.");
+            useHardcodedData();
+        }
+
+        render();
+    } catch (error) {
+        console.error("Error fetching data from API:", error);
+        useHardcodedData();
+        render();
+    }
+}
+
+function useHardcodedData() {
+    data = {
     transitions: [
         {
             id: '1', name: 'James Wright', role: 'Design', status: 'Offboarding', risk: 'high', progress: 45, score: 66, location: 'New York', hw: 'MacBook Pro M2', hwStatus: 'Awaiting Return Kit', tracking: '-', costWaste: 180,
@@ -67,11 +94,7 @@ const data = {
         highRisk: 5
     }
 };
-
-let currentTab = 'dashboard';
-let selectedKnowledgeId = '1';
-let selectedTelemetryId = 'e1';
-let isGenerating = false;
+}
 
 // --- NAVIGATION LOGIC ---
 window.setTab = function(tab) {
@@ -131,6 +154,15 @@ function render() {
     const container = document.getElementById('content-area');
     container.innerHTML = '';
 
+    if (!data.metrics) {
+        // Data hasn't loaded yet
+        container.innerHTML = '<div class="flex h-full items-center justify-center"><i data-lucide="loader" class="w-8 h-8 animate-spin text-indigo-600"></i></div>';
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+        return;
+    }
+
     if (currentTab === 'dashboard') renderDashboard(container);
     if (currentTab === 'employees') renderEmployees(container);
     if (currentTab === 'transitions') renderTransitions(container);
@@ -183,7 +215,7 @@ function renderDashboard(container) {
                     <div class="p-1.5 bg-amber-50 text-amber-600 rounded-md"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i></div>
                 </div>
                 <p class="text-3xl font-black text-slate-900">${data.metrics.tasks.total}</p>
-                <p class="text-xs text-slate-500 mt-1"><span class="text-amber-600 font-medium">3 critical</span></p>
+                <p class="text-xs text-slate-500 mt-1"><span class="text-amber-600 font-medium">${data.metrics.tasks.critical} critical</span></p>
             </div>
             <div class="card p-5">
                 <div class="flex justify-between items-start mb-2">
@@ -474,7 +506,7 @@ function renderTransitions(container) {
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Transitions</h1>
-                    <p class="text-sm text-slate-500 mt-1">3 active workflows</p>
+                    <p class="text-sm text-slate-500 mt-1">${data.transitions.length} active workflows</p>
                 </div>
                 <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                     <i data-lucide="plus" class="w-4 h-4"></i> New Transition
@@ -920,5 +952,5 @@ function renderGraphSVG(t) {
 
 // Initialize App
 window.onload = () => {
-    render();
+    initializeData();
 };

@@ -1,0 +1,68 @@
+{
+    "transitions": [
+        {
+            "id": "1", "name": "James Wright", "role": "Design", "status": "Offboarding", "risk": "high", "progress": 45, "score": 66, "location": "New York", "hw": "MacBook Pro M2", "hwStatus": "Awaiting Return Kit", "tracking": "-", "costWaste": 180,
+            "knowledgeCaptured": 65,
+            "responses": {
+                "context": "I manage the primary design system in Figma. If access is lost, the entire engineering team will lose component syncing.",
+                "stakeholders": "VP of Product expects the Q3 redesign files by Friday. Unwritten rule: Always CC the creative director on core component updates."
+            },
+            "dependencies": [
+                { "category": "Internal-Org", "description": "Design System Hub", "impact": "Critical" },
+                { "category": "Internal-Org", "description": "Brand Guidelines", "impact": "High Impact" },
+                { "category": "Client-Side", "description": "Enterprise Redesign Project", "impact": "Critical" }
+            ]
+        },
+        {
+            "id": "2", "name": "Alex Kim", "role": "Marketing", "status": "Onboarding", "risk": "medium", "progress": 30, "score": 0, "location": "Austin", "hw": "Dell XPS 15", "hwStatus": "Issued", "tracking": "Delivered", "costWaste": 0,
+            "knowledgeCaptured": 0, "responses": { "context": "", "stakeholders": "" }, "dependencies": []
+        },
+        {
+            "id": "3", "name": "Emily Watson", "role": "Support", "status": "Offboarding", "risk": "critical", "progress": 60, "score": 78, "location": "Chicago", "hw": "MacBook Air M1", "hwStatus": "In Transit", "tracking": "FDX-8821", "costWaste": 245,
+            "knowledgeCaptured": 55,
+            "responses": {
+                "context": "I own the Zendesk admin keys and routing rules. I also maintain the VIP client escalation matrix on the shared drive.",
+                "stakeholders": "Top 5 enterprise clients ping me directly on Slack. They need to be formally handed over to Marcus."
+            },
+            "dependencies": [
+                { "category": "Client-Side", "description": "Top 5 VIP Clients", "impact": "Critical" },
+                { "category": "Infrastructure", "description": "Zendesk Routing Engine", "impact": "Critical" },
+                { "category": "Internal-Org", "description": "Escalation Matrix", "impact": "Medium Impact" }
+            ]
+        }
+    ],
+    "employees": [
+        { "id": "e1", "name": "Sarah Jenkins", "role": "Frontend Lead", "status": "ACTIVE", "dept": "Engineering", "location": "San Francisco", "score": 82, "focus": 78, "output": 94, "state": "OPTIMAL", "github": { "commits": 45, "prs": 12, "lines": 3400 }, "calendar": { "hours": 18, "conflicts": 2 }, "slack": { "afterHours": 0, "reply": "12m" }, "jira": { "tickets": 14, "rollovers": 2 }, "insight": "Performance is optimal. High code velocity correlates with healthy deep work blocks. No intervention required." },
+        { "id": "e2", "name": "Mike Ross", "role": "Backend Dev", "status": "ACTIVE", "dept": "Engineering", "location": "Remote - India", "score": 91, "focus": 45, "output": 88, "state": "BURNOUT RISK", "github": { "commits": 12, "prs": 3, "lines": 800 }, "calendar": { "hours": 32, "conflicts": 8 }, "slack": { "afterHours": 14, "reply": "4m" }, "jira": { "tickets": 6, "rollovers": 5 }, "insight": "High burnout risk detected. Meeting load has increased 40% week-over-week, severely impacting deep work. Slack activity after hours is elevated." },
+        { "id": "e3", "name": "Elena Fisher", "role": "Product Manager", "status": "ACTIVE", "dept": "Product", "location": "San Francisco", "score": 95, "focus": 50, "output": 91, "state": "OPTIMAL", "github": { "commits": 0, "prs": 0, "lines": 0 }, "calendar": { "hours": 24, "conflicts": 4 }, "slack": { "afterHours": 2, "reply": "8m" }, "jira": { "tickets": 22, "rollovers": 1 }, "insight": "Consistent output and manageable meeting load. Team unblocking metrics remain high." },
+        { "id": "e4", "name": "Sam Drake", "role": "Sales Lead", "status": "ACTIVE", "dept": "Sales", "location": "New York", "score": 88, "focus": 30, "output": 82, "state": "OPTIMAL", "github": { "commits": 0, "prs": 0, "lines": 0 }, "calendar": { "hours": 12, "conflicts": 1 }, "slack": { "afterHours": 1, "reply": "15m" }, "jira": { "tickets": 0, "rollovers": 0 }, "insight": "Sales metrics are stable. Communication volume is within expected bounds." },
+        { "id": "e5", "name": "Chloe Frazer", "role": "Designer", "status": "ACTIVE", "dept": "Design", "location": "Denver", "score": 70, "focus": 85, "output": 95, "state": "OPTIMAL", "github": { "commits": 0, "prs": 0, "lines": 0 }, "calendar": { "hours": 8, "conflicts": 0 }, "slack": { "afterHours": 0, "reply": "45m" }, "jira": { "tickets": 8, "rollovers": 0 }, "insight": "Excellent deep work ratios. Minimal context switching detected." }
+    ],
+    "tasks": [
+        { "title": "Revoke Figma license", "desc": "James Wright · IT Admin", "dept": "IT", "priority": "HIGH", "time": "24h", "completed": false },
+        { "title": "Design system documentation handover", "desc": "James Wright · Lisa Park", "dept": "Manager", "priority": "CRITICAL", "time": "48h", "completed": false },
+        { "title": "Exit interview", "desc": "James Wright · Nina Patel", "dept": "HR", "priority": "MEDIUM", "time": "72h", "completed": true },
+        { "title": "Return company equipment", "desc": "James Wright · Office Admin", "dept": "Facilities", "priority": "MEDIUM", "time": "48h", "completed": false },
+        { "title": "Set up Slack account", "desc": "Alex Kim · IT Admin", "dept": "IT", "priority": "HIGH", "time": "4h", "completed": true },
+        { "title": "HubSpot license provisioning", "desc": "Alex Kim · IT Admin", "dept": "IT", "priority": "HIGH", "time": "8h", "completed": false },
+        { "title": "Welcome orientation meeting", "desc": "Alex Kim · Nina Patel", "dept": "HR", "priority": "MEDIUM", "time": "24h", "completed": true },
+        { "title": "Enterprise client handover meetings", "desc": "Emily Watson · Diana Torres", "dept": "Manager", "priority": "CRITICAL", "time": "48h", "completed": false },
+        { "title": "Revoke Zendesk admin access", "desc": "Emily Watson · IT Admin", "dept": "IT", "priority": "HIGH", "time": "24h", "completed": false }
+    ],
+    "auditLogs": [
+        { "title": "Transition initiated", "tag": "transition", "desc": "Offboarding workflow started for James Wright", "user": "Nina Patel", "action": "transition", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "Transition initiated", "tag": "transition", "desc": "Onboarding workflow started for Alex Kim", "user": "Nina Patel", "action": "transition", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "Task completed", "tag": "transition", "desc": "Exit interview completed for James Wright", "user": "Nina Patel", "action": "task", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "License flagged", "tag": "license", "desc": "CrowdStrike license for Tom Bradley flagged as unused - $45/mo waste", "user": "System", "action": "license", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "Access revoked", "tag": "access", "desc": "GitHub access revoked for Tom Bradley", "user": "IT Admin", "action": "license", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "Knowledge capture started", "tag": "knowledge", "desc": "Knowledge capture session initiated for Emily Watson", "user": "Nina Patel", "action": "knowledge", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "License flagged", "tag": "license", "desc": "Confluence license for Marcus Rivera unused since Nov 2025", "user": "System", "action": "license", "date": "Feb 19, 2026 10:31 PM" },
+        { "title": "Transition completed", "tag": "transition", "desc": "Tom Bradley offboarding completed", "user": "Nina Patel", "action": "transition", "date": "Feb 19, 2026 10:31 PM" }
+    ],
+    "metrics": {
+        "active": 3,
+        "tasks": { "total": 10, "critical": 3 },
+        "ghostWasted": 111,
+        "highRisk": 5
+    }
+}
