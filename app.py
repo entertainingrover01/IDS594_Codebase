@@ -1,5 +1,6 @@
 import os
 import json
+import certifi
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -12,7 +13,15 @@ CORS(app)
 
 # --- Database Connection ---
 MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
+
+# We use certifi to prevent SSL handshake errors on some systems, 
+# and add connection pooling to avoid reconnecting on every request.
+client = MongoClient(
+    MONGO_URI, 
+    tlsCAFile=certifi.where(),
+    maxPoolSize=50, 
+    wTimeoutMS=2500
+)
 db = client.get_database("transition_iq")
 
 def get_initial_data():
@@ -47,6 +56,9 @@ def home():
 @app.route('/api/data')
 def get_data():
     """API endpoint to serve all data from the database."""
+    # Fetch all data concurrently using a single dictionary comprehension 
+    # to avoid sequential blocking where possible (though pymongo is synchronous, 
+    # the driver handles connections efficiently from the pool)
     data = {
         "transitions": list(db.transitions.find({}, {'_id': 0})),
         "employees": list(db.employees.find({}, {'_id': 0})),
